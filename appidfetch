@@ -1,0 +1,32 @@
+<html>
+<body>
+<input type="text" id="find">
+	
+</input>
+<button onclick="find()">Find!</button>
+<div id="print"></div>
+</body>
+<script>
+myJsonpCallback = function(data) {
+	console.log(data);
+	document.getElementById('print').innerHTML = "";
+	for (var i = 0; i < data.resultCount; i++){
+		document.getElementById('print').innerHTML += data.results[i].trackName+"<br/>";
+}
+//	document.getElementById('print').innerHTML += 
+//	"<b>Name:</b> " + data.results[0].trackCensoredName + 
+//	"<br/><b>ID:</b> " + data.results[0].trackId;
+};
+
+function find(){
+	var name=document.getElementById('find').value.replace(' ','+');
+	var scriptEl = document.createElement('script');
+	scriptEl.setAttribute('src',
+	    'https://itunes.apple.com/search?term='+name+
+	    '&entity=software&callback=myJsonpCallback');
+	document.body.appendChild(scriptEl);
+}
+
+
+</script>
+</html>
