@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\build\\intermediates\\res\\merged\\debug\\layout\\devices_list.xml",
+        "source": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\src\\main\\res\\layout\\devices_list.xml"
+    },
+    {
+        "merged": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\build\\intermediates\\res\\merged\\debug\\layout\\main.xml",
+        "source": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\src\\main\\res\\layout\\main.xml"
+    },
+    {
+        "merged": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\build\\intermediates\\res\\merged\\debug\\layout\\fragment_chat.xml",
+        "source": "C:\\Users\\clindest\\AndroidStudioProjects\\WiFiDirectServiceDiscovery\\app\\src\\main\\res\\layout\\fragment_chat.xml"
+    }
+]
