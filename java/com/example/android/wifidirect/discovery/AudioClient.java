@@ -11,9 +11,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/**
- * Created by clindest on 2016-03-09.
- */
 public class AudioClient implements Runnable {
     private static final String TAG = "AudioClient";
 

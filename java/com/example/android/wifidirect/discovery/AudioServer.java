@@ -8,9 +8,6 @@ import android.util.Log;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-/**
- * Created by clindest on 2016-03-10.
- */
 public class AudioServer implements Runnable {
     DatagramSocket serverSocket;
     private int sampleRate = 44100;
