@@ -134,7 +134,7 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
      * Registers a local service and then initiates a service discovery
      */
     private void startRegistrationAndDiscovery() {
-        Map<String, String> record = new HashMap<String, String>();
+        Map<String, String> record = new HashMap<>();
         record.put(TXTRECORD_PROP_AVAILABLE, "visible");
 
         WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
@@ -306,7 +306,7 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
-        Thread handler = null;
+        Thread handler;
         /*
          * The group owner accepts connections using a server socket and then spawns a
          * client socket for every client. This is handled by {@code
@@ -316,8 +316,7 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
         if (p2pInfo.isGroupOwner) {
             Log.d(TAG, "Connected as group owner");
             try {
-                handler = new GroupOwnerSocketHandler(
-                        ((MessageTarget) this).getHandler());
+                handler = new GroupOwnerSocketHandler(this.getHandler());
                 handler.start();
             } catch (IOException e) {
                 Log.d(TAG,
@@ -326,8 +325,7 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
             }
         } else {
             Log.d(TAG, "Connected as peer");
-            handler = new ClientSocketHandler(
-                    ((MessageTarget) this).getHandler(),
+            handler = new ClientSocketHandler(this.getHandler(),
                     p2pInfo.groupOwnerAddress);
             handler.start();
         }
