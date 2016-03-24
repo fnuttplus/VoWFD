@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<script src="https://cdn.firebase.com/js/client/2.4.1/firebase.js"></script>
+
+<style type="text/css">
+body{font-family: sans-serif;}
+.icon{width:20px;height:20px;border:1px solid black;padding:2px;border-radius: 2px;}
+input[type="text"]{
+  padding:5px;
+  border-radius: 5px;
+  border:1px solid #ddd;
+  font-size: 15px;
+  transition: box-shadow 0.3s, border 0.3s;
+}
+input[type="text"]:focus{
+  border:1px solid #777;
+  box-shadow: 0 0 5px 1px #969696;
+  outline:none;
+}
+label{cursor: pointer;}
+</style>
+
+<body>
+<div id ="out"></div>
+<h1 id="title" onclick="rename1()"></h1>
+<svg id="svg" style="height:200;width:200;" viewbox="0 0 20 20">
+<path id="path" d="" />
+</svg>
+<textarea id="d" style="width:300px;height:200px;" onkeyup="save()">
+</textarea>
+<br/>
+<label><input type="checkbox" id="zoom" onchange="zoom()" checked>zoom</label>
+<input type="text" placeholder="#5ae" size="7" oninput="color(this.value)" 
+ onkeydown="if(event.keyCode==13)color(this.value)" list="colors" />
+<datalist id="colors">
+ <option value="#5ae">Twitter</option>
+ <option value="#ddd">Gray</option>
+</datalist>
+<input type="text" id="newname" placeholder="New icon name"
+ onkeydown="if(event.keyCode==13)addnew(this.value)">
+</body>
+
+<script>
+var editing = false;
+function color(c) {
+	document.getElementById('path').style.fill=c;
+}
+
+function rename2(oldname){
+	var name = document.getElementById('nn').value;
+	var path = document.getElementById('d').value;
+	document.getElementById('title').innerHTML = ""+name;
+	var myFirebaseRef = new Firebase("https://svgedit.firebaseio.com");
+	myFirebaseRef.child(oldname).set(null);
+	myFirebaseRef.child(name).set(path);
+	setTimeout(function(){editing=false}, 100); //best solution??
+}
+function rename1(){
+	if (editing) return;
+	editing = true;
+	var title =document.getElementById('title').innerHTML;
+	document.getElementById('title').innerHTML = 
+	"<input id='nn' type='text' value='"+title+"'></input><input type='button' onclick=\"rename2('"+title+"')\" value='Rename!' />";
+}
+
+function addnew(name) {
+	var myFirebaseRef = new Firebase("https://svgedit.firebaseio.com");
+	myFirebaseRef.child(name).set("");
+
+	edit(name);
+	document.getElementById('newname').value = "";
+}
+
+function zoom(){
+	var svg = document.getElementById('svg');
+	if (document.getElementById('zoom').checked) {
+		svg.style.height = 200;
+		svg.style.width = 200;
+	} else {
+		svg.style.height = 20;
+	}
+
+}
+
+function save() {
+	var myFirebaseRef = new Firebase("https://svgedit.firebaseio.com");
+	var title =document.getElementById('title').innerHTML;
+	var path = document.getElementById('d').value;
+
+	myFirebaseRef.child(title).set(path);
+	document.getElementById('path').setAttribute("d", document.getElementById('d').value);
+}
+
+function update(snapshot) {
+	val = snapshot.val();
+	document.getElementById('d').value = val;
+	document.getElementById('path').setAttribute("d", val);
+	document.getElementById('title').innerHTML = snapshot.key();
+}
+
+function edit(name) {
+	myFirebaseRef.child(name).once("value", update);
+}
+
+var pls;
+var myFirebaseRef = new Firebase("https://svgedit.firebaseio.com/");
+var print=document.getElementById('out');
+myFirebaseRef.on("value", function(snapshot) {
+  print.innerHTML = "";
+  snapshot.forEach(function(snapshot){
+  	print.innerHTML += "<h3 onclick=\"edit('"+snapshot.key()+"')\">"+snapshot.key()+" <svg class='icon' viewbox='0 0 20 20'><path d='"+snapshot.val()+"' /></svg></h3>";
+  });
+});
+
+</script>
+</html>

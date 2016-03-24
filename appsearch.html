@@ -1,0 +1,41 @@
+<html>
+<style>
+input[type="text"]{
+  padding:5px;
+  border-radius: 5px;
+  border:1px solid #ddd;
+  font-size: 17px;
+}
+input[type="text"]:focus{
+  border:1px solid #5cf;
+  outline:none;
+}
+
+</style>
+<body style="font-family: sans-serif;margin:20px;">
+<input type="text" id="find" onkeydown="if(event.keyCode==13)find()" placeholder="Search iTunes">
+<div id="print" style="margin-top:20px;"></div>
+</body>
+<script>
+//https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/#searching
+myJsonpCallback = function(data) {
+  console.log(data);
+  document.getElementById('print').innerHTML = "";
+  for (var i = 0; i < data.resultCount; i++){
+    document.getElementById('print').innerHTML += 
+    "<i>"+data.results[i].trackId+"</i>: " + 
+    data.results[i].trackName + "<br/>";
+  }
+};
+
+function find() {
+  var name=document.getElementById('find').value.replace(' ','+');
+  var scriptEl = document.createElement('script');
+  scriptEl.setAttribute('src',
+    'https://itunes.apple.com/search?country=sv&term='+name+
+    '&entity=software&callback=myJsonpCallback');
+  document.body.appendChild(scriptEl);
+}
+
+</script>
+</html>
