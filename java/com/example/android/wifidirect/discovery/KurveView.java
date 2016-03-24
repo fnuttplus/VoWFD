@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -33,16 +32,13 @@ public class KurveView extends View {
         String mName;
         Vector mMovement;
         Vector mPosition;
-        int mX;
-        int mY;
-        Rect rect;
+        int mX, mY, mPreviousX, mPreviousY;
         public Kurve(float startX, float startY, int color, String name){
             mColor = color;
             mDirection = Math.PI/4;
             mName = name;
             mMovement = new Vector(Math.sin(mDirection)*15, Math.cos(mDirection)*15);
             mPosition = new Vector(startX, startY);
-            rect = new Rect((int)mPosition.X - 5, (int)mPosition.Y - 5, (int)mPosition.X + 5, (int)mPosition.Y + 5);
         }
 
         public void update(long dt, int turn) {
@@ -55,33 +51,33 @@ public class KurveView extends View {
                 mMovement.X = Math.sin(mDirection)*15;
                 mMovement.Y = Math.cos(mDirection)*15;
             }
-            int pX = (int)mPosition.X;
-            int pY = (int)mPosition.Y;
             mPosition.X += mMovement.X*dt/100;
             mPosition.Y += mMovement.Y*dt/100;
             if (mPosition.X+5 > mScreenWidth) mPosition.X = 5;
             if (mPosition.Y+5 > mScreenHeight) mPosition.Y = 5;
             if (mPosition.X < 5) mPosition.X = mScreenWidth-5;
             if (mPosition.Y < 5) mPosition.Y = mScreenHeight-5;
+            mPreviousX = mX;
+            mPreviousY = mY;
             mX = (int)mPosition.X;
             mY = (int)mPosition.Y;
 
             for (int x = 0; x < 10; x++) {
                 for (int y = 0; y < 10; y++) {
                     if (mMovement.X < 0) {
-                        if (mX - 5 + x >= pX - 5) {
+                        if (mX - 5 + x >= mPreviousX - 5) {
                             if (mMovement.Y < 0){
-                                if (mY - 5 + y >= pY - 5) continue;
+                                if (mY - 5 + y >= mPreviousY - 5) continue;
                             } else {
-                                if (mY - 5 + y <= pY + 5) continue;
+                                if (mY - 5 + y <= mPreviousY + 5) continue;
                             }
                         }
                     } else {
-                        if (mX - 5 + x <= pX + 5) {
+                        if (mX - 5 + x <= mPreviousX + 5) {
                             if (mMovement.Y < 0) {
-                                if (mY - 5 + y >= pY - 5) continue;
+                                if (mY - 5 + y >= mPreviousY - 5) continue;
                             } else {
-                                if (mY - 5 + y <= pY + 5) continue;
+                                if (mY - 5 + y <= mPreviousY + 5) continue;
                             }
                         }
                     }
