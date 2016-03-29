@@ -5,5 +5,8 @@
     <string name="btn_send">Send</string>
     <string name="txt_hint">Type Message</string>
     <string name="app_name">Wi-Fi Discovery</string>
+    <string name="txt_create_lobby">Create lobby</string>
+    <string name="txt_search">Search for lobby</string>
+    <string name="txt_waiting">Waiting for players</string>
 
 </resources>
