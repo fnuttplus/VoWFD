@@ -1,0 +1,11 @@
+Fixes:
+ * smoother controls (on pointer basis?)
+ * cleaner gaps, and snake?
+ * handle destroy, clear old memory
+ * design
+
+Features:
+ * dynamic game state
+  - local players
+ * wifi direct
+ * network connections

@@ -33,6 +33,9 @@ public class KurveView extends View {
         Vector mMovement;
         Vector mPosition;
         int mX, mY, mPreviousX, mPreviousY;
+        private boolean gap = false;
+        private int gaptimer = 0;
+
         public Kurve(float startX, float startY, int color, String name){
             mColor = color;
             mDirection = Math.PI/4;
@@ -41,13 +44,31 @@ public class KurveView extends View {
             mPosition = new Vector(startX, startY);
         }
 
+        /**
+        @param dt time difference in ms
+        @param turn turn direction
+         */
         public void update(long dt, int turn) {
+
+            gaptimer += dt;
+            if (!gap) {
+                if (gaptimer > 1500) {
+                    gap = true;
+                    gaptimer = 0;
+                }
+            } else {
+                if (gaptimer > 100) {
+                    gap = false;
+                    gaptimer = 0;
+                }
+            }
+
             if (turn == DIR_LEFT) {
-                mDirection += Math.PI/10;
+                mDirection += Math.PI*dt/1000;
                 mMovement.X = Math.sin(mDirection)*15;
                 mMovement.Y = Math.cos(mDirection)*15;
             } else if (turn == DIR_RIGHT) {
-                mDirection -= Math.PI/10;
+                mDirection -= Math.PI*dt/1000;
                 mMovement.X = Math.sin(mDirection)*15;
                 mMovement.Y = Math.cos(mDirection)*15;
             }
@@ -62,6 +83,8 @@ public class KurveView extends View {
             mX = (int)mPosition.X;
             mY = (int)mPosition.Y;
 
+            if (gap) return;
+
             for (int x = 0; x < 10; x++) {
                 for (int y = 0; y < 10; y++) {
                     if (mMovement.X < 0) {
@@ -69,15 +92,15 @@ public class KurveView extends View {
                             if (mMovement.Y < 0){
                                 if (mY - 5 + y >= mPreviousY - 5) continue;
                             } else {
-                                if (mY - 5 + y <= mPreviousY + 5) continue;
+                                if (mY - 5 + y < mPreviousY + 5) continue;
                             }
                         }
                     } else {
-                        if (mX - 5 + x <= mPreviousX + 5) {
+                        if (mX - 5 + x < mPreviousX + 5) {
                             if (mMovement.Y < 0) {
                                 if (mY - 5 + y >= mPreviousY - 5) continue;
                             } else {
-                                if (mY - 5 + y <= mPreviousY + 5) continue;
+                                if (mY - 5 + y < mPreviousY + 5) continue;
                             }
                         }
                     }
@@ -86,12 +109,10 @@ public class KurveView extends View {
                         mColor = Color.GRAY;
                         return;
                     }
-
                     mBitmap.setPixel(mX - 5 + x, mY - 5 + y, mColor);
                 }
             }
         }
-
     }
 
     private int mScreenHeight;
