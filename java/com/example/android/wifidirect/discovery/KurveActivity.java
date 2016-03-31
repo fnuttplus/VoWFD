@@ -52,7 +52,8 @@ public class KurveActivity extends Activity implements Handler.Callback {
                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
                 Log.d("START", String.valueOf(msg.arg1));
                 playing = true;
-                setContentView(new KurveView(this, metrics.heightPixels, metrics.widthPixels));
+                GameInfo gameInfo = new GameInfo(metrics.heightPixels, metrics.widthPixels, msg.arg1);
+                setContentView(new KurveView(this, gameInfo));
                 break;
             case 2:
                 Fragment searchFragment = new SearchFragment();

@@ -1,16 +1,23 @@
 package com.example.android.wifidirect.discovery;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.net.NetworkRequest;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.sql.Time;
+import java.util.Arrays;
 
 public class KurveView extends View {
     Kurve redKurve = new Kurve(300, 200, Color.RED, "Red Kurve");
     Kurve blueKurve = new Kurve(200,300, Color.BLUE, "Blue Kurve");
+    Kurve[] mPlayers;
     Paint paint = new Paint();
     long prevTime;
     Bitmap mBitmap;
@@ -88,19 +95,19 @@ public class KurveView extends View {
             for (int x = 0; x < 10; x++) {
                 for (int y = 0; y < 10; y++) {
                     if (mMovement.X < 0) {
-                        if (mX - 5 + x >= mPreviousX - 5) {
+                        if (mX + x >= mPreviousX) {
                             if (mMovement.Y < 0){
-                                if (mY - 5 + y >= mPreviousY - 5) continue;
+                                if (mY + y >= mPreviousY) continue;
                             } else {
-                                if (mY - 5 + y < mPreviousY + 5) continue;
+                                if (mY + y < mPreviousY + 10) continue;
                             }
                         }
                     } else {
-                        if (mX - 5 + x < mPreviousX + 5) {
+                        if (mX + x < mPreviousX + 10) {
                             if (mMovement.Y < 0) {
-                                if (mY - 5 + y >= mPreviousY - 5) continue;
+                                if (mY + y >= mPreviousY) continue;
                             } else {
-                                if (mY - 5 + y < mPreviousY + 5) continue;
+                                if (mY + y < mPreviousY + 10) continue;
                             }
                         }
                     }
@@ -118,12 +125,17 @@ public class KurveView extends View {
     private int mScreenHeight;
     private int mScreenWidth;
 
-    public KurveView(Context context, int screenHeight, int screenWidth) {
+    public KurveView(Context context, GameInfo gameInfo) {
         super(context);
         prevTime = System.currentTimeMillis();
         invalidate();
-        mScreenHeight = screenHeight;
-        mScreenWidth = screenWidth;
+        mScreenHeight = gameInfo.ScreenHeight;
+        mScreenWidth = gameInfo.ScreenWidth;
+        mPlayers = new Kurve[gameInfo.Players];
+        int[] colors = {Color.RED, Color.BLUE};
+        for (int i = 0; i < gameInfo.Players; i++) {
+            mPlayers[i] = new Kurve(0,0,colors[i%colors.length], "Kurve");
+        }
         mBitmap = Bitmap.createBitmap(mScreenWidth, mScreenHeight, Bitmap.Config.RGB_565);
     }
     @Override
@@ -133,8 +145,8 @@ public class KurveView extends View {
         prevTime = System.currentTimeMillis();
 
         int turnRed = Kurve.DIR_STRAIGHT;
-        if (drawQ3 && !drawQ1) turnRed = Kurve.DIR_LEFT;
-        if (drawQ1 && !drawQ3) turnRed = Kurve.DIR_RIGHT;
+        if ((pressRegions & 0x03) > 0 && (pressRegions & 0x30)==0) turnRed = Kurve.DIR_LEFT;
+        if ((pressRegions & 0x30) > 0 && (pressRegions & 0x03)==0) turnRed = Kurve.DIR_RIGHT;
         int turnBlue = Kurve.DIR_STRAIGHT;
         if (drawQ2 && !drawQ4) turnBlue = Kurve.DIR_LEFT;
         if (drawQ4 && !drawQ2) turnBlue = Kurve.DIR_RIGHT;
@@ -156,16 +168,34 @@ public class KurveView extends View {
 
         invalidate();
     }
-boolean drawQ1, drawQ2, drawQ3, drawQ4;
+
+    boolean drawQ1, drawQ2, drawQ3, drawQ4;
+    short pressRegions;
     @Override
     public boolean onTouchEvent (MotionEvent e){
         int pointers = e.getPointerCount();
         float x,y;
         drawQ1 = drawQ2 = drawQ3 = drawQ4  = false;
+        pressRegions = 0;
         for (int i = 0; i < pointers; i++) {
-            if (e.getActionMasked() == MotionEvent.ACTION_UP) continue;
+            if ((e.getActionMasked() == MotionEvent.ACTION_POINTER_UP && e.getActionIndex() == i)
+                || (e.getAction() == MotionEvent.ACTION_UP))
+                continue;
             x = e.getX(i);
             y = e.getY(i);
+
+            int h = mScreenHeight/4;
+            int w = mScreenWidth/2;
+            pressRegions = (byte)(
+                    ((y<4*h && y>3*h && x<2*w && x>1*w)?1:0) << 7 |
+                    ((y<3*h && y>2*h && x<2*w && x>1*w)?1:0) << 6 |
+                    ((y<2*h && y>1*h && x<2*w && x>1*w)?1:0) << 5 |
+                    ((y<1*h && y>0*h && x<2*w && x>1*w)?1:0) << 4 |
+                    ((y<4*h && y>3*h && x<1*w && x>0*w)?1:0) << 3 |
+                    ((y<3*h && y>2*h && x<1*w && x>0*w)?1:0) << 2 |
+                    ((y<2*h && y>1*h && x<1*w && x>0*w)?1:0) << 1 |
+                    ((y<1*h && y>0*h && x<1*w && x>0*w)?1:0));
+
             if (y < mScreenHeight / 2 && x < mScreenWidth / 2) {
                 drawQ1 = true;
             } else if (y > mScreenHeight / 2 && x < mScreenWidth / 2) {
@@ -175,8 +205,29 @@ boolean drawQ1, drawQ2, drawQ3, drawQ4;
             } else if (y > mScreenHeight / 2 && x > mScreenWidth / 2) {
                 drawQ4 = true;
             }
+            NetworkPacket np = new NetworkPacket((int)e.getEventTime(), 3, pressRegions);
+            Log.d("TOUCH", Arrays.toString(np.getMarshall()));
         }
         return true;
     }
 
+    private class NetworkPacket {
+        private int TimeStamp;
+        private int PlayerID;
+        private int Action;
+        public NetworkPacket(int timeStamp, int playerID, int action){
+            TimeStamp = timeStamp;
+            PlayerID = playerID;
+            Action = action;
+        }
+        public byte[] getMarshall() {
+            byte[] marshall = new byte[4];
+            marshall[0] = (byte)(TimeStamp & 0xff);
+            marshall[1] = (byte)((TimeStamp & 0xff00) >> 8);
+            marshall[2] = (byte)PlayerID;
+            marshall[3] = (byte)Action;
+
+            return marshall;
+        }
+    }
 }
