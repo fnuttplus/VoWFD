@@ -56,7 +56,7 @@ public class CreateFragment extends Fragment implements View.OnClickListener {
                 }
             }
         });
-
+        new Thread(new GameServer()).start();
         return view;
 
     }

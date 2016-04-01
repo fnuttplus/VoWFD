@@ -9,3 +9,12 @@ Features:
   - local players
  * wifi direct
  * network connections
+
+network flow:
+ 1. GO starts server.
+ 2c. Clients sends number of local players with names, and control masks?
+ 2s. for every client that connects, GO assigns player IDs and responds.
+ 3. start game
+ 4c. every touch is sent to server.
+ 5s. move snakes, send locations to clients.
+ 5c. draw snakes with location from server.

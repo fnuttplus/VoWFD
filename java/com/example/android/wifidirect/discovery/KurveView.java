@@ -1,17 +1,19 @@
 package com.example.android.wifidirect.discovery;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.net.NetworkRequest;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.sql.Time;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Arrays;
 
 public class KurveView extends View {
@@ -170,7 +172,10 @@ public class KurveView extends View {
     }
 
     boolean drawQ1, drawQ2, drawQ3, drawQ4;
-    short pressRegions;
+    byte pressRegions;
+    NetworkPacket np = new NetworkPacket(3);
+    GameClient client = new GameClient(null);
+
     @Override
     public boolean onTouchEvent (MotionEvent e){
         int pointers = e.getPointerCount();
@@ -205,27 +210,51 @@ public class KurveView extends View {
             } else if (y > mScreenHeight / 2 && x > mScreenWidth / 2) {
                 drawQ4 = true;
             }
-            NetworkPacket np = new NetworkPacket((int)e.getEventTime(), 3, pressRegions);
-            Log.d("TOUCH", Arrays.toString(np.getMarshall()));
+            //client.Send(np.getMarshall(pressRegions));
+
+            Log.d("TOUCH", Arrays.toString(np.getMarshall(pressRegions)));
         }
         return true;
     }
 
-    private class NetworkPacket {
-        private int TimeStamp;
-        private int PlayerID;
-        private int Action;
-        public NetworkPacket(int timeStamp, int playerID, int action){
-            TimeStamp = timeStamp;
-            PlayerID = playerID;
-            Action = action;
+    private class GameClient {
+        DatagramSocket socket;
+        InetAddress mAddress;
+
+        public GameClient(InetAddress serverAddress) {
+            try {
+                socket = new DatagramSocket();
+                mAddress = serverAddress;
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
         }
-        public byte[] getMarshall() {
+
+        public void Send(byte[] data){
+            DatagramPacket packet = new DatagramPacket(data, data.length, mAddress, 4545);
+            try {
+                socket.send(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private class NetworkPacket {
+        private short Counter;
+        private byte PlayerID;
+
+        public NetworkPacket(int playerID){
+            Counter = 0;
+            PlayerID = (byte)playerID;
+        }
+        public byte[] getMarshall(byte  action) {
+            Counter++;
             byte[] marshall = new byte[4];
-            marshall[0] = (byte)(TimeStamp & 0xff);
-            marshall[1] = (byte)((TimeStamp & 0xff00) >> 8);
-            marshall[2] = (byte)PlayerID;
-            marshall[3] = (byte)Action;
+            marshall[1] = (byte)(Counter & 0xff);
+            marshall[0] = (byte)((Counter >> 8) & 0xff);
+            marshall[2] = PlayerID;
+            marshall[3] = action;
 
             return marshall;
         }
